@@ -1,4 +1,6 @@
 target
 *.jar
-*.classpath
-*.project
+.classpath
+.project
+.settings
+.DS_Store
