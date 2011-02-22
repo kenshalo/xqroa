@@ -1,4 +1,4 @@
 target
 *.jar
-.classpath
-.project
+*.classpath
+*.project
