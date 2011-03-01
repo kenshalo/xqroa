@@ -1,8 +1,27 @@
 (:
+    Copyright 2010 Daniel Kenshalo
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+        http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+    
+    @author: <a href="mailto:kenshalo@gmail.com">Dan Kenshalo</a>
+    @since: August 1, 2010
+    @version: 1.0
+:)
+
+(:
     IMPORTANT: 
-    This file should NOT have to be modified.  Modification will have impact 
-    to all controllers and views in the application and should be coordinated 
-    among the team.  
+    This file should NOT have to be modified.  Modifications to this file will
+    most likely create side effects within the framework.
 
     ActionController is a main xquery module that serves as the main controller 
     for the application.  This module is returned by the applcation's URL
@@ -10,36 +29,28 @@
     
     ActionController uses the following logic to process uris to controllers 
     (resources):
-    1. split url by /
-    2. determine request-content type to set from url
-    3. parse url backwards to find controller name
-    4. create map that contains scoping information where {:key} = {value-in-uri}
-    5. if there is a value for path prefix determine if additional values should
-       be added to path parameter map
-    6. determine HTTP method and call corresponding method in controller with 
-       map as parameter.
-        
-    TODO 
-    Add support in resources.xqy and logic in eval-controller for subordinate
-    controller directories.  For example evaluate a controller at uri
-    fn:concat($controllers-dir, 'some-dir') where 'some-dir' is defined in 
-    resources.xqy    
+    1.  Initialize resources defined in resource-config.xq.
+    2.  Find the resource configuration information for the requested url.
+    3.  If the resource configuration information is found then create a map:map
+        from scoping information defined in the url.
+    4.  Find and evaulate the controller associated with the resource.
+    5.  Return the representation for the resource.
 :)
 xquery version "1.0-ml";
 declare namespace msp = "urn:us:gov:ic:msp:v3.1";
-import module namespace global = 'urn:us:gov:ic:jman:storefront:global:v0.01'
-    at '/xquery/config/global.xqy';
-import module namespace res = "urn:us:gov:ic:jman:storefront:resources:v0.01" 
-    at "/xquery/config/resources.xqy";
-import module namespace util = "urn:us:gov:ic:jman:storefront:util:v0.01" 
+import module namespace global = 'urn:xqroa:global:v1.0'
+    at '/xquery/config/global.xq';
+import module namespace res = "urn:xqroa:res:v1.0" 
+    at "/xquery/config/resources.xq";
+import module namespace util = "urn:xqroa:util:v1.0" 
     at "/xquery/lib/util/util.xq";
-import module namespace error = "urn:us:gov:ic:jman:storefront:error:v0.01" 
-    at "/xquery/config/error.xqy";
-import module namespace json = "urn:us:gov:ic:jman:storefront:json:v0.01" 
-    at "/xquery/lib/util/json.xqy"; 
+import module namespace error = "urn:xqroa:error:v1.0" 
+    at "/xquery/config/error.xq";
+import module namespace json = "urn:xqroa:json:v1.0" 
+    at "/xquery/lib/util/json.xq"; 
 
-declare namespace controller = "urn:us:gov:ic:jman:storefront:controller:v0.01";
-declare namespace view = "urn:us:gov:ic:jman:storefront:view:v0.1";
+declare namespace controller = "urn:xqroa:controller:v1.0";
+declare namespace view = "urn:xqroa:view:v1.0";
 
 (:
     Initialize resources
@@ -47,9 +58,9 @@ declare namespace view = "urn:us:gov:ic:jman:storefront:view:v0.1";
 declare variable $res:resources as element(resources) := res:init();
 
 (:
-    Process request is the main entry point to process requests.  It gets url
-    information and delegates to the correct controller file if there is a 
-    controller defined for the resource.
+    process-request is the main entry point for the action controller.  
+    It gets url information and delegates to the correct controller file 
+    if there is a controller defined for the resource.
 :)
 declare function controller:process-request() {
     (: Get request information :)
@@ -63,7 +74,15 @@ declare function controller:process-request() {
         let $params := controller:get-parameter-map($url, $resource)
         return controller:eval-controller($resource, $http-method, $params, $url)
     else 
-        error:page(404, "Not Found", $res:resources)
+        if ($res:resources/resource[@root = "true"]) then
+            let $root-resource := $res:resources/resource[@root = "true"]
+            let $params := controller:get-parameter-map($url, $root-resource)
+            return controller:eval-controller($root-resource, $http-method, 
+                $params, $url)
+        else if (fn:string-length($url) eq 0) then
+            xdmp:redirect-response("/public/index.html")
+        else
+            error:page(404, "Not Found", ($url, $res:resources))
 }; 
 
 (:
@@ -72,7 +91,7 @@ declare function controller:process-request() {
     indicating no resource was found.
 :)
 declare function controller:get-resource-config($url as xs:string) 
-    {
+    as element(resource) {
     (: determine which resource to use :)
     let $found-resource := for $resource in $res:resources/resource
     where fn:matches($url, $resource/url-regex/text())
@@ -80,11 +99,8 @@ declare function controller:get-resource-config($url as xs:string)
     
     return if($found-resource) then
         $found-resource
-    else if (fn:string-length($url) = 0) then
-        $res:resources/resource[@root = "true"]
     else
         <resource name="not-found"></resource>
-    
 };
 
 declare function controller:get-parameter-map($url as xs:string, 
@@ -191,7 +207,7 @@ declare function controller:eval-controller($resource as element(resource),
         
     return try {
         let $model := if ($default-controller) then
-            <p>used default controller... no model</p>
+            <p></p>
         else
             xdmp:eval(fn:concat($import-declaration, $function-call),
                 (),

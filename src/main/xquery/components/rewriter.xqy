@@ -1,5 +1,5 @@
 (:
-    Copyright 2011 Daniel Kenshalo
+    Copyright 2010 Daniel Kenshalo
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
     limitations under the License.
     
     @author: <a href="mailto:kenshalo@gmail.com">Dan Kenshalo</a>
-    @since: February 22, 2011
+    @since: August 1, 2010
     @version: 1.0
     @see: resource-config.xq 
-     
+:)
+
+(:
     The rewriter serves a the main entry point into the xqroa framework for HTTP
     requests.  The rewriter gets the request url, adds a 'url' request parameter, and
     replaces any '?' characters with '&' characters. 
@@ -44,8 +46,8 @@
 :)
 xquery version "1.0-ml";
 
-import module namespace global = "xqroa:global:v1.0"
-    at "/xquery/config/global.xqy";
+import module namespace global = "urn:xqroa:global:v1.0"
+    at "/xquery/config/global.xq";
 
 declare function local:construct-new($url as xs:string)
     as xs:string 
@@ -54,7 +56,12 @@ declare function local:construct-new($url as xs:string)
 };
 
 declare variable $url as xs:string := xdmp:get-request-url();
-if(fn:matches($url, fn:concat("^", $global:resource-dir))) then
-        $url
+if(fn:matches($url, $global:public-dir)) then
+    fn:concat("/xquery", $url)
+(:
+else if ($url eq "/") then
+    "/xquery/public/index.html"
+:)
 else
-        fn:concat("/xquery/components/action-controller.xqy?", local:construct-new($url))
+    fn:concat("/xquery/components/action-controller.xqy?", 
+        local:construct-new($url))

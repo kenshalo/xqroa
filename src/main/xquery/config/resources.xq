@@ -1,15 +1,35 @@
 (:
+    Copyright 2010 Daniel Kenshalo
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+        http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+    
+    @author: <a href="mailto:kenshalo@gmail.com">Dan Kenshalo</a>
+    @since: August 1, 2010
+    @version: 1.0
+:)
+
+(:
     Resource definitions used to be in this file but were moved to resource-config.xqy.
 
     resources.xqy contains methods that use the resource-config:resource-definitions 
     variable to construct additional information used by action-controller
     to process HTTP requests.
 :)
-module namespace res = 'urn:us:gov:ic:jman:storefront:resources:v0.01';
-import module namespace global = 'urn:us:gov:ic:jman:storefront:global:v0.01' 
-    at '/xquery/config/global.xqy';
-import module namespace resource-config = 'urn:us:gov:ic:jman:storefront:resource-config:v0.01'
-    at '/xquery/config/resource-config.xqy';
+module namespace res = 'urn:xqroa:res:v1.0';
+import module namespace global = 'urn:xqroa:global:v1.0' 
+    at '/xquery/config/global.xq';
+import module namespace resource-config = 'urn:xqroa:resource-config:v1.0'
+    at '/xquery/config/resource-config.xq';
 
 declare variable $res:ex as xs:string := "[a-zA-Z0-9_\-\+]+";
 declare variable $res:url-req-regex as xs:string := fn:concat("(/", $res:ex, ")");

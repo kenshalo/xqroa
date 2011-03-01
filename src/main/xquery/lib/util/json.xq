@@ -1,12 +1,35 @@
-xquery version "1.0-ml";
 (:
- : module: json.xqy - functions to convert XML nodes to JSON
- : @author: Mike Fagan
- : @since: May 26, 2009
- : @version: 1.0
+    Copyright 2010 Daniel Kenshalo
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+        http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+    
+    @author: <a href="mailto:kenshalo@gmail.com">Dan Kenshalo</a>
+    @since: August 1, 2010
+    @version: 1.0
 :)
 
-module namespace json = "urn:us:gov:ic:jman:storefront:json:v0.01";
+(:
+  module: json.xqy - functions to convert XML nodes to JSON
+  @author: Mike Fagan
+  @author: Dan Kenshalo (small updates)
+  @since: May 26, 2009
+  @version: 1.0
+:)
+
+
+xquery version "1.0-ml";
+
+module namespace json = "urn:xqroa:json:v1.0";
 
 (: function to convert a sequence of nodes to a JSON array of Objects :)
 
