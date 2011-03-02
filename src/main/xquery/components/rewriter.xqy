@@ -58,10 +58,6 @@ declare function local:construct-new($url as xs:string)
 declare variable $url as xs:string := xdmp:get-request-url();
 if(fn:matches($url, $global:public-dir)) then
     fn:concat("/xquery", $url)
-(:
-else if ($url eq "/") then
-    "/xquery/public/index.html"
-:)
 else
     fn:concat("/xquery/components/action-controller.xqy?", 
         local:construct-new($url))
