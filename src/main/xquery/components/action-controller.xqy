@@ -27,8 +27,7 @@
     for the application.  This module is returned by the applcation's URL
     rewriter. (see rewriter.xqy)  
     
-    ActionController uses the following logic to process uris to controllers 
-    (resources):
+    ActionController uses the following logic to process http requests 
     1.  Initialize resources defined in resource-config.xq.
     2.  Find the resource configuration information for the requested url.
     3.  If the resource configuration information is found then create a map:map
@@ -74,15 +73,18 @@ declare function controller:process-request() {
         let $params := controller:get-parameter-map($url, $resource)
         return controller:eval-controller($resource, $http-method, $params, $url)
     else 
-        if ($res:resources/resource[@root = "true"]) then
-            let $root-resource := $res:resources/resource[@root = "true"]
-            let $params := controller:get-parameter-map($url, $root-resource)
-            return controller:eval-controller($root-resource, $http-method, 
-                $params, $url)
-        else if (fn:string-length($url) eq 0) then
-            xdmp:redirect-response("/public/index.html")
-        else
+        let $len := fn:string-length($url)
+        return if ($len != 0) then
             error:page(404, "Not Found", ($url, $res:resources))
+        else
+            if ($res:resources/resource[@root = "true"]) then
+                let $root-resource := $res:resources/resource[@root = "true"]
+                let $params := controller:get-parameter-map($url, 
+                    $root-resource)
+                return controller:eval-controller($root-resource, $http-method, 
+                    $params, $url)
+            else
+                xdmp:redirect-response("/public/index.html")
 }; 
 
 (:
@@ -90,8 +92,9 @@ declare function controller:process-request() {
     found for the url this method returns <resource name="not-found"></resource>
     indicating no resource was found.
 :)
-declare function controller:get-resource-config($url as xs:string) 
-    as element(resource) {
+declare function controller:get-resource-config(
+    $url as xs:string
+) as element(resource) {
     (: determine which resource to use :)
     let $found-resource := for $resource in $res:resources/resource
     where fn:matches($url, $resource/url-regex/text())
@@ -103,8 +106,10 @@ declare function controller:get-resource-config($url as xs:string)
         <resource name="not-found"></resource>
 };
 
-declare function controller:get-parameter-map($url as xs:string, 
-    $resource as element(resource)) {
+declare function controller:get-parameter-map(
+    $url as xs:string, 
+    $resource as element(resource)
+) as map:map {
     let $url-regex := fn:concat($resource/url-regex/text())
     let $resource-path := $resource/path/text()
     let $resource-regex := $resource/path-regex/text()
@@ -160,7 +165,9 @@ declare function controller:get-parameter-map($url as xs:string,
     TODO write a test case for this function Content-Type (capital T) doesn't
     work
 :)
-declare function controller:get-request-body($params as map:map){
+declare function controller:get-request-body(
+    $params as map:map
+) {
     let $body-map := map:map()
     let $body-parms := map:get($params,'request-params')
     let $content-type := xdmp:get-request-header("Content-type")
@@ -180,8 +187,12 @@ declare function controller:get-request-body($params as map:map){
         else ''
 };
 
-declare function controller:eval-controller($resource as element(resource), 
-    $method as xs:string, $params as map:map, $url as xs:string) {
+declare function controller:eval-controller(
+    $resource as element(resource), 
+    $method as xs:string, 
+    $params as map:map, 
+    $url as xs:string
+) {
     (: evaluate the controller :)
     let $controller-name := data($resource/@name)
     let $default-controller := $resource/default-controller/text()

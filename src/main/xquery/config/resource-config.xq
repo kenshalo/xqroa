@@ -49,4 +49,8 @@ module namespace resource-config =
 declare variable $resource-config:resource-definitions 
     as element(resources) := <resources>
     (: add your resources here... :)
+    <resource name="hello-world">
+        <path>/hello-world</path>
+        <default-controller>true</default-controller>
+    </resource>
 </resources>;
