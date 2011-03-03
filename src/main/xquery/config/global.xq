@@ -56,5 +56,5 @@ declare variable $global:resource-definition-uri := '/app/resources.xml';
 
 (: Action Controller configuration variables :)
 declare variable $global:url-request-field as xs:string := 'url';
-declare variable $global:controller-dir as xs:string := '/xquery/app/controller/';
+declare variable $global:controller-dir as xs:string := '/xquery/app/controllers/';
 declare variable $global:view-dir as xs:string := '/xquery/app/views/';

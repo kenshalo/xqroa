@@ -200,7 +200,7 @@ declare function controller:eval-controller(
         $controller-name, '-controller.xqy')
     let $import-declaration := fn:concat(
                 'import module namespace controller =',
-                '"urn:us:gov:ic:jman:storefront:controller:v0.1" at ',
+                '"urn:xqroa:controller:v1.0" at ',
                 '"', $controller-file, '";'
             )
     
